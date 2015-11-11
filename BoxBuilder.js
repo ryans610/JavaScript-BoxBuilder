@@ -1,4 +1,4 @@
-var DragBox=(function namespace(){
+var BoxBuilder=(function namespace(){
     //Constructor
     function Init(container,map,callback,mode){
         config.map=map;
