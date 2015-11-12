@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Google Map Demo</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <style>
+        html, body, #map-canvas {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        #map-canvas{
+            width: 1000px;
+            height: 500px;
+            margin: 0 auto;
+        }
+        #box {
+            border: 2px solid red;
+            position: absolute;
+            font-size: 1px;
+            background-color: rgba(0,0,0,0.0);
+            z-index: 1;
+        }
+        .box-border{
+            border: 1px solid red;
+            position: absolute;
+            font-size: 1px;
+            background-color: rgba(0,0,0,0.0);
+            z-index: 1;
+        }
+        .marker-info{
+            border-collapse: collapse;
+        }
+        .marker-info td{
+            border: 1px solid black;
+        }
+
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+    <script src="BoxBuilder.js"></script>
+    <script src="GoogleMarkerBuilder.js"></script>
+    <script>
+    	var markers=[
+    		{
+                DCIS: "10302001",
+                CPSLocation: "臺北市羅斯福路三段242號",
+                designLocation: "臺北市羅斯福路三段242號",
+                tpcCoordinate: "B8146CC58",
+                lat: 25.017740,
+                lng: 121.531041,
+            },
+    		{
+                DCIS: "",
+                CPSLocation: "羅斯福路3段126之5號",
+                designLocation: "羅斯福路3段126之5號",
+                tpcCoordinate: "",
+                lat: 25.020729,
+                lng: 121.528174,
+            },
+    	];
+        google.maps.event.addDomListener(window, 'load', function(){
+    		var map=new google.maps.Map(
+    			document.getElementById('map-canvas'),
+    			{
+    				zoom: 16,	//初始縮放
+    				center: new google.maps.LatLng(25.017740, 121.531041),	//初始中心點
+    			}
+    		);
+
+    		var boxBuilder=new BoxBuilder(
+    			document.getElementById('map-canvas'),	//Container
+                map,									//Google Map
+                {										//Options
+                	mode:BoxBuilderMode.fixed,
+                	id:"box",
+                	className:"box",
+                }
+    		);
+    		boxBuilder.setFixedBoxLatLng({
+    			lat: 25.018795,
+                lng: 121.529574
+    		},{
+    			lat: 25.016436,
+                lng: 121.532723
+    		});
+
+    		var googleMarkerBuilder=new GoogleMarkerBuilder(map,function (info){
+				var tmp="<table class='marker-info'>";
+				tmp+="<tr><td>DCIS</td><td>"+info.DCIS+"</td></tr>";
+				tmp+="<tr><td>施工地點(CPS)</td><td>"+info.CPSLocation+"</td></tr>";
+				tmp+="<tr><td>施工地點(設計)</td><td>"+info.designLocation+"</td></tr>";
+				tmp+="<tr><td>台電座標</td><td>"+info.tpcCoordinate+"</td></tr>";
+				tmp+="<tr><td>地理座標</td><td>"+info.lng+","+info.lat+"</td></tr>";
+				tmp+="</table>";
+				return tmp;
+    		});
+    		googleMarkerBuilder.setMarkers(markers);
+        });
+    </script>
+</head>
+<body>
+    <div id="map-canvas"></div>
+</body>
+</html>
