@@ -1,16 +1,20 @@
+var BoxBuilderMode;
 var BoxBuilder=(function namespace(){
     //Constructor
-    function Init(container,map,callback,mode){
-        config.map=map;
-        if(map==null){
-            config.googleMap=false;
+    function Init(container,map,options){
+        if(typeof(container)=="undefined"){
+            container=document.getElementsByTagName("body")[0];
         }
         config.container=container;
-        config.resultCallback=callback;
-        if(!mode){
-            mode=0;
+        config.map=map;
+        if(!map){
+            config.googleMap=false;
         }
-        config.mode=mode;
+        if(typeof(options.mode)=="undefined"){
+            options.mode=0;
+        }
+        this.setOptions(options);
+
         if(config.mode==Mode.normal
            ||config.mode==Mode.keep
            ||config.mode==Mode.multiple){
@@ -22,36 +26,61 @@ var BoxBuilder=(function namespace(){
             }
         }
         if(config.googleMap&&config.mode==Mode.fixed){
-            google.maps.event.addListener(config.map,"drag",fixedBoxUpdateHandler);
             google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+            google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
         }
     }
     //Public Method
-    Init.prototype.setBoxId=function(id){
-        config.boxId=id;
+    Init.prototype.setOptions=function(options){
+        if(typeof(options.mode)=="number"&&
+            options.mode>=0&&
+            options.mode<=3){
+            config.mode=options.mode;
+        }
+        if(typeof(options.hollow)=="boolean"){
+            config.hollow=options.hollow;
+        }
+        if(typeof(options.id)=="string"){
+            config.boxId=options.id;
+            if(config.mode!=Mode.multiple&&config.box){
+                setId(config.box,config.boxId);
+            }
+            else if(boxes.length>0){
+                for(var i in boxes){
+                    setId(boxes[i],""+config.boxId+i);
+                }
+            }
+        }
+        if(typeof(options.className)=="string"){
+            config.boxClass=options.className;
+            if(config.mode!=Mode.multiple&&config.box){
+                setClassName(config.box,config.boxClass);
+            }
+            else if(boxes.length>0){
+                for(var i in boxes){
+                    setClassName(boxes[i],config.boxClass);
+                }
+            }
+        }
+        if(typeof(options.callback)=="function"){
+            config.resultCallback=options.callback;
+        }
     };
     Init.prototype.clearBoxes=function(){
-        if(config.mode=Mode.multiple&&config.boxCount>1){
+        if(config.mode=Mode.multiple&&boxes.length>0){
             for(var i in boxes){
-                if(document.getElementById(config.boxId+(i+1))){
-                    config.container.removeChild(boxes[i]);
-                }
+                deleteBox(boxes[i],""+config.boxId+i);
             }
             boxes.length=0;
         }
     };
-    Init.prototype.setMode=function(mode){
-        config.mode=mode;
-    };
     Init.prototype.setFixedBox=function(p1,p2){
-        config.box=document.createElement("div");
-        config.box.id=config.boxId;
-        config.box.className=config.boxClass;
-        config.box.style.left=p1.x+"px";
-        config.box.style.top=p1.y+"px";
-        config.box.style.width=(p2.x-p1.x)+"px";
-        config.box.style.height=(p2.y-p1.y)+"px";
-        config.container.appendChild(config.box);
+        if(config.mode==Mode.fixed){
+            if(config.box){
+                deleteBox(config.box,config.boxId);
+            }
+            config.box=addBox(p1,p2);
+        }
     };
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
         config.fixedPoints={
@@ -75,11 +104,9 @@ var BoxBuilder=(function namespace(){
                 }
                 config.keyDownSenser=true;
             }
-            if(config.container){
-                config.container.addEventListener("mousedown",mouseDownHandler);
-                config.container.addEventListener("mousemove",mouseMoveHandler);
-                config.container.addEventListener("mouseup",mouseUpHandler);
-            }
+            config.container.addEventListener("mousedown",mouseDownHandler);
+            config.container.addEventListener("mousemove",mouseMoveHandler);
+            config.container.addEventListener("mouseup",mouseUpHandler);
         }
     }
     function keyUpHandler(e){
@@ -88,17 +115,14 @@ var BoxBuilder=(function namespace(){
                 config.map.setOptions({draggable: true});
             }
             config.keyDownSenser=false;
-            if(config.container){
-                config.container.removeEventListener("mousedown",mouseDownHandler);
-                config.container.removeEventListener("mousemove",mouseMoveHandler);
-                config.container.removeEventListener("mouseup",mouseUpHandler);
-            }
-            if(document.getElementById(config.boxId)&&config.mode==Mode.normal){
-                config.container.removeChild(config.box);
+            config.container.removeEventListener("mousedown",mouseDownHandler);
+            config.container.removeEventListener("mousemove",mouseMoveHandler);
+            config.container.removeEventListener("mouseup",mouseUpHandler);
+            if(config.mode==Mode.normal){
+                deleteBox(config.box,config.boxId);
             }
             if(document.getElementById(config.boxId)&&config.mode==Mode.multiple){
-                config.box.id=config.boxId+config.boxCount;
-                config.boxCount++;
+                setId(config.box,""+config.boxId+boxes.length);
                 boxes.push(config.box);
                 config.box=null;
             }
@@ -107,41 +131,36 @@ var BoxBuilder=(function namespace(){
     function mouseDownHandler(e){
         var pos={};
         var offset=getOffset(config.container);
-        temp.start.X=pos.X=navigator.appName=="Netscape"?e.clientX:event.clientX;
-        temp.start.Y=pos.Y=navigator.appName=="Netscape"?e.clientY:event.clientY;
+        temp.start.x=pos.x=(navigator.appName=="Netscape"?e.clientX:event.clientX)-offset.left;
+        temp.start.y=pos.y=(navigator.appName=="Netscape"?e.clientY:event.clientY)-offset.top;
         if(!config.boxInit){
-            config.box=document.createElement("div");
-            config.box.id=config.boxId;
-            config.box.className=config.boxClass;
-            config.box.style.left=(pos.X-offset.left)+"px";
-            config.box.style.top=(pos.Y-offset.top)+"px";
-            config.container.appendChild(config.box);
+            config.box=addBox(pos,pos);
             config.boxInit=true;
         }else{
-            config.box.style.left=(pos.X-offset.left)+"px";
-            config.box.style.top=(pos.Y-offset.top)+"px";
-            config.box.style.width=config.box.style.height=0;
+            updateBox(config.box,pos,pos);
         }
         config.dragging=true;
     }
     function mouseMoveHandler(e){
-        var pos={};
         var offset=getOffset(config.container);
-        temp.end.X=pos.X=navigator.appName=="Netscape"?e.clientX:event.clientX;
-        temp.end.Y=pos.Y=navigator.appName=="Netscape"?e.clientY:event.clientY;
         if(config.dragging){
-            config.box.style.width=Math.abs(pos.X-temp.start.X)+"px";
-            config.box.style.height=Math.abs(pos.Y-temp.start.Y)+"px";
-            config.box.style.left=((pos.X<temp.start.X?pos.X:temp.start.X)-offset.left)+"px";
-            config.box.style.top=((pos.Y<temp.start.Y?pos.Y:temp.start.Y)-offset.top)+"px";
+            temp.end.x=(navigator.appName=="Netscape"?e.clientX:event.clientX)-offset.left;
+            temp.end.y=(navigator.appName=="Netscape"?e.clientY:event.clientY)-offset.top;
+            var p1={
+                x:Math.min(temp.start.x,temp.end.x),
+                y:Math.min(temp.start.y,temp.end.y)
+            };
+            var p2={
+                x:Math.max(temp.start.x,temp.end.x),
+                y:Math.max(temp.start.y,temp.end.y)
+            };
+            updateBox(config.box,p1,p2);
         }
     }
     function mouseUpHandler(e){
         config.dragging=false;
         config.boxInit=false;
-        if(document.getElementById("box")){
-            config.container.removeChild(config.box);
-        }
+        deleteBox(config.box);
         endResult(temp.start,temp.end);
     }
     function mapMouseDownHandler(event){
@@ -156,23 +175,115 @@ var BoxBuilder=(function namespace(){
         if(config.googleMap&&config.mode==Mode.fixed){
             getGoogleMapPixel(config.fixedPoints.p1.lat,config.fixedPoints.p1.lng,function(point1){
                 getGoogleMapPixel(config.fixedPoints.p2.lat,config.fixedPoints.p2.lng,function(point2){
-                    config.box.style.left=point1.x+"px";
-                    config.box.style.top=point1.y+"px";
-                    config.box.style.width=(point2.x-point1.x)+"px";
-                    config.box.style.height=(point2.y-point1.y)+"px";
+                    updateBox(config.box,point1,point2);
                 });
             });
         }
     }
     //Private Method
+    function setId(box,id){
+        if(config.hollow){
+            box.top.id=id+"-top";
+            box.right.id=id+"-right";
+            box.bottom.id=id+"-bottom";
+            box.left.id=id+"-left";
+        }
+        else{
+            box.id=id;
+        }
+    }
+    function setClassName(box,className){
+        if(config.hollow){
+            box.top.className=className+"-border";
+            box.right.className=className+"-border";
+            box.bottom.className=className+"-border";
+            box.left.className=className+"-border";
+        }
+        else{
+            box.className=className;
+        }
+    }
+    function addBox(p1,p2){
+        var box;
+        if(config.hollow){
+            box={};
+            box.top=document.createElement("div");
+            box.right=document.createElement("div");
+            box.bottom=document.createElement("div");
+            box.left=document.createElement("div");
+            setId(box,config.boxId);
+            setClassName(box,config.boxClass);
+            updateBox(box,p1,p2);
+            config.container.appendChild(box.top);
+            config.container.appendChild(box.right);
+            config.container.appendChild(box.bottom);
+            config.container.appendChild(box.left);
+        }
+        else{
+            box=document.createElement("div");
+            setId(box,config.boxId);
+            setClassName(box,config.boxClass);
+            updateBox(box,p1,p2);
+            container.appendChild(box);
+        }
+        return box;
+    }
+    function updateBox(box,p1,p2){
+        if(config.hollow){
+            box.top.style.left=p1.x+"px";
+            box.top.style.top=p1.y+"px";
+            box.top.style.width=(p2.x-p1.x)+"px";
+            box.top.style.height=0+"px";
+            box.right.style.left=p2.x+"px";
+            box.right.style.top=p1.y+"px";
+            box.right.style.width=0+"px";
+            box.right.style.height=(p2.y-p1.y)+"px";
+            box.bottom.style.left=p1.x+"px";
+            box.bottom.style.top=p2.y+"px";
+            box.bottom.style.width=(p2.x-p1.x)+"px";
+            box.bottom.style.height=0+"px";
+            box.left.style.left=p1.x+"px";
+            box.left.style.top=p1.y+"px";
+            box.left.style.width=0+"px";
+            box.left.style.height=(p2.y-p1.y)+"px";
+        }
+        else{
+            box.style.left=p1.x+"px";
+            box.style.top=p1.y+"px";
+            box.style.width=(p2.x-p1.x)+"px";
+            box.style.height=(p2.y-p1.y)+"px";
+        }
+        return box;
+    }
+    function deleteBox(box,id){
+        if(config.hollow){
+            if(document.getElementById(id+"-top")){
+                config.container.removeChild(box.top);
+            }
+            if(document.getElementById(id+"-right")){
+                config.container.removeChild(box.right);
+            }
+            if(document.getElementById(id+"-bottom")){
+                config.container.removeChild(box.bottom);
+            }
+            if(document.getElementById(id+"-left")){
+                config.container.removeChild(box.left);
+            }
+        }
+        else{
+            if(document.getElementById(id)){
+                config.container.removeChild(box);
+            }
+        }
+    }
     function endResult(start,end){
         var result={};
-        result.min.X=Math.min(start.X,end.X);
-        result.min.Y=Math.min(start.Y,end.Y);
+        result.min.x=Math.min(start.x,end.x);
+        result.min.y=Math.min(start.y,end.y);
         result.min.lat=Math.min(start.lat,end.lat);
         result.min.lng=Math.min(start.lng,end.lng);
-        result.max.X=Math.max(start.X,end.X);
-        result.max.Y=Math.max(start.Y,end.Y);
+        result.max.x=Math.max(start.x,end.x);
+        result.max.y=Math.max(start.y,end.y);
         result.max.lat=Math.max(start.lat,end.lat);
         result.max.lng=Math.max(start.lng,end.lng);
         console.log("Min:"+result.min.lat+","+result.min.lng+"\nMax:"+result.max.lat+","+result.max.lng);
@@ -217,20 +328,25 @@ var BoxBuilder=(function namespace(){
         map:null,
         container:null,
         resultCallback:undefined,
-        boxCount:1,
         dragging:false,
         fixedPoints:null,
+        hollow:true,
     };
     var temp={
         start:{
+            x:null,
+            y:null,
             lat:null,
             lng:null
         },
         end:{
+            x:null,
+            y:null,
             lat:null,
             lng:null
         },
     };
     var boxes=[];
+    BoxBuilderMode=Mode;
     return Init;
 }());
