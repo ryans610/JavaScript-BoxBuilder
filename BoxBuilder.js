@@ -2,15 +2,16 @@ var BoxBuilderMode;
 var BoxBuilder=(function namespace(){
     //Constructor
     function Init(container,map,options){
-        if(typeof(container)=="undefined"){
+        if(typeof(container)=="undefined"||container==null){
             container=document.getElementsByTagName("body")[0];
         }
         config.container=container;
         config.map=map;
         if(!map){
             config.googleMap=false;
+            console.log("Warring:Google Map is not Active!");
         }
-        if(typeof(options.mode)=="undefined"){
+        if(typeof(options.mode)=="undefined"||options.mode==null){
             options.mode=0;
         }
         this.setOptions(options);
@@ -42,10 +43,9 @@ var BoxBuilder=(function namespace(){
         }
         if(typeof(options.id)=="string"){
             config.boxId=options.id;
-            if(config.mode!=Mode.multiple&&config.box){
+            if(config.mode!=Mode.multiple&&!!config.box){
                 setId(config.box,config.boxId);
-            }
-            else if(boxes.length>0){
+            }else if(boxes.length>0){
                 for(var i in boxes){
                     setId(boxes[i],""+config.boxId+i);
                 }
@@ -53,10 +53,9 @@ var BoxBuilder=(function namespace(){
         }
         if(typeof(options.className)=="string"){
             config.boxClass=options.className;
-            if(config.mode!=Mode.multiple&&config.box){
+            if(config.mode!=Mode.multiple&&!!config.box){
                 setClassName(config.box,config.boxClass);
-            }
-            else if(boxes.length>0){
+            }else if(boxes.length>0){
                 for(var i in boxes){
                     setClassName(boxes[i],config.boxClass);
                 }
@@ -75,11 +74,22 @@ var BoxBuilder=(function namespace(){
         }
     };
     Init.prototype.setFixedBox=function(p1,p2){
+        if(Number(p1.x)==NaN||Number(p1.y)==NaN||Number(p2.x)==NaN||Number(p2.y)==NaN){
+            console.log("Error:Parameter must be two Object(Number x,y)!");
+            return;
+        }else{
+            p1.x=Number(p1.x);
+            p1.y=Number(p1.y);
+            p2.x=Number(p2.x);
+            p2.y=Number(p2.y);
+        }
         if(config.mode==Mode.fixed){
-            if(config.box){
+            if(!!config.box){
                 deleteBox(config.box,config.boxId);
             }
             config.box=addBox(p1,p2);
+        }else{
+            console.log("Error:BoxBuilderMode is not fixed!");
         }
     };
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
@@ -93,6 +103,8 @@ var BoxBuilder=(function namespace(){
                     Init.prototype.setFixedBox(point1,point2);
                 });
             });
+        }else{
+            console.log("Error:Google Map is not Active!");
         }
     };
     //Event Handler
@@ -121,7 +133,7 @@ var BoxBuilder=(function namespace(){
             if(config.mode==Mode.normal){
                 deleteBox(config.box,config.boxId);
             }
-            if(document.getElementById(config.boxId)&&config.mode==Mode.multiple){
+            if(!!document.getElementById(config.boxId)&&config.mode==Mode.multiple){
                 setId(config.box,""+config.boxId+boxes.length);
                 boxes.push(config.box);
                 config.box=null;
@@ -187,8 +199,7 @@ var BoxBuilder=(function namespace(){
             box.right.id=id+"-right";
             box.bottom.id=id+"-bottom";
             box.left.id=id+"-left";
-        }
-        else{
+        }else{
             box.id=id;
         }
     }
@@ -198,8 +209,7 @@ var BoxBuilder=(function namespace(){
             box.right.className=className+"-border";
             box.bottom.className=className+"-border";
             box.left.className=className+"-border";
-        }
-        else{
+        }else{
             box.className=className;
         }
     }
@@ -218,8 +228,7 @@ var BoxBuilder=(function namespace(){
             config.container.appendChild(box.right);
             config.container.appendChild(box.bottom);
             config.container.appendChild(box.left);
-        }
-        else{
+        }else{
             box=document.createElement("div");
             setId(box,config.boxId);
             setClassName(box,config.boxClass);
@@ -246,8 +255,7 @@ var BoxBuilder=(function namespace(){
             box.left.style.top=p1.y+"px";
             box.left.style.width=0+"px";
             box.left.style.height=(p2.y-p1.y)+"px";
-        }
-        else{
+        }else{
             box.style.left=p1.x+"px";
             box.style.top=p1.y+"px";
             box.style.width=(p2.x-p1.x)+"px";
@@ -257,35 +265,41 @@ var BoxBuilder=(function namespace(){
     }
     function deleteBox(box,id){
         if(config.hollow){
-            if(document.getElementById(id+"-top")){
+            if(!!document.getElementById(id+"-top")){
                 config.container.removeChild(box.top);
             }
-            if(document.getElementById(id+"-right")){
+            if(!!document.getElementById(id+"-right")){
                 config.container.removeChild(box.right);
             }
-            if(document.getElementById(id+"-bottom")){
+            if(!!document.getElementById(id+"-bottom")){
                 config.container.removeChild(box.bottom);
             }
-            if(document.getElementById(id+"-left")){
+            if(!!document.getElementById(id+"-left")){
                 config.container.removeChild(box.left);
             }
-        }
-        else{
-            if(document.getElementById(id)){
+        }else{
+            if(!!document.getElementById(id)){
                 config.container.removeChild(box);
             }
         }
     }
     function endResult(start,end){
-        var result={};
+        var result={
+            min:{},
+            max:{}
+        };
         result.min.x=Math.min(start.x,end.x);
         result.min.y=Math.min(start.y,end.y);
-        result.min.lat=Math.min(start.lat,end.lat);
-        result.min.lng=Math.min(start.lng,end.lng);
         result.max.x=Math.max(start.x,end.x);
         result.max.y=Math.max(start.y,end.y);
-        result.max.lat=Math.max(start.lat,end.lat);
-        result.max.lng=Math.max(start.lng,end.lng);
+        if(config.googleMap){
+            result.min.lat=Math.min(start.lat,end.lat);
+            result.min.lng=Math.min(start.lng,end.lng);
+            result.max.lat=Math.max(start.lat,end.lat);
+            result.max.lng=Math.max(start.lng,end.lng);
+        }else{
+            result.min.lat=result.min.lng=result.max.lat=result.max.lng=null;
+        }
         console.log("Min:"+result.min.lat+","+result.min.lng+"\nMax:"+result.max.lat+","+result.max.lng);
         config.resultCallback&&config.resultCallback.call(this,result);
         return result;
@@ -299,17 +313,25 @@ var BoxBuilder=(function namespace(){
         };
     }
     function getGoogleMapPixel(lat,lng,callback){
-        var overlay=new google.maps.OverlayView();
-        overlay.draw=function(){};
-        overlay.onAdd=function(){
-            callback&&callback.call(
-                this,
-                this.getProjection().fromLatLngToContainerPixel(
-                    new google.maps.LatLng(lat,lng)
-                )
-            );
-        };
-        overlay.setMap(config.map);
+        if(config.googleMap){
+            if(Number(lat)==NaN||Number(lng)==NaN){
+                console.log("Error:Parameter must be two Number and a Callback Function!");
+                return;
+            }
+            var overlay=new google.maps.OverlayView();
+            overlay.draw=function(){};
+            overlay.onAdd=function(){
+                callback&&callback.call(
+                    this,
+                    this.getProjection().fromLatLngToContainerPixel(
+                        new google.maps.LatLng(lat,lng)
+                    )
+                );
+            };
+            overlay.setMap(config.map);
+        }else{
+            console.log("Error:Google Map is not Active!");
+        }
     }
     //Config
     var Mode={
