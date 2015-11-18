@@ -41,6 +41,10 @@
     <script src="BoxBuilder.js"></script>
     <script src="GoogleMarkerBuilder.js"></script>
     <script>
+    	var map;
+    	var boxBuilder;
+    	var googleMarkerBuilder;
+
     	var markers=[
     		{
                 DCIS: "10302001",
@@ -59,8 +63,9 @@
                 lng: 121.528174,
             },
     	];
+
         google.maps.event.addDomListener(window, 'load', function(){
-    		var map=new google.maps.Map(
+    		map=new google.maps.Map(
     			document.getElementById('map-canvas'),
     			{
     				zoom: 16,	//初始縮放
@@ -68,7 +73,7 @@
     			}
     		);
 
-    		var boxBuilder=new BoxBuilder(
+    		boxBuilder=new BoxBuilder(
     			document.getElementById('map-canvas'),	//Container
                 map,									//Google Map
                 {										//Options
@@ -85,7 +90,7 @@
                 lng: 121.532723
     		});
 
-    		var googleMarkerBuilder=new GoogleMarkerBuilder(map,function (info){
+    		googleMarkerBuilder=new GoogleMarkerBuilder(map,function (info){
 				var tmp="<table class='marker-info'>";
 				tmp+="<tr><td>DCIS</td><td>"+info.DCIS+"</td></tr>";
 				tmp+="<tr><td>施工地點(CPS)</td><td>"+info.CPSLocation+"</td></tr>";
