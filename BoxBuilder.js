@@ -16,7 +16,7 @@ var BoxBuilder=(function namespace(){
         }
         this.setOptions(options);
 
-        if(config.mode==Mode.normal
+        /*if(config.mode==Mode.normal
            ||config.mode==Mode.keep
            ||config.mode==Mode.multiple){
             document.addEventListener("keydown",keyDownHandler);
@@ -29,17 +29,52 @@ var BoxBuilder=(function namespace(){
         if(config.googleMap&&config.mode==Mode.fixed){
             google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
             google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
-        }
+        }*/
     }
     //Public Method
-    Init.prototype.setOptions=function(options){
-        if(typeof(options.mode)=="number"&&
-            options.mode>=0&&
-            options.mode<=3){
-            config.mode=options.mode;
+    Init.prototype.setGoogleMap=function(map){
+        if(!!map){
+            config.map=map;
+            config.googleMap=true;
+            if(config.mode==Mode.normal
+               ||config.mode==Mode.keep
+               ||config.mode==Mode.multiple){
+                google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
+                google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
+            }else if(config.mode==Mode.fixed){
+                google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+                google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+            }
         }
-        if(typeof(options.hollow)=="boolean"){
-            config.hollow=options.hollow;
+    };
+    Init.prototype.setOptions=function(options){
+        if(Number(options.mode)!=NaN&&options.mode!=null){
+            if(options.mode>=0&&options.mode<=3){
+                var originMode=config.mode;
+                config.mode=options.mode;
+                if(originMode==Mode.fixed&&options.mode!=Mode.fixed){
+                    document.addEventListener("keydown",keyDownHandler);
+                    document.addEventListener("keyup",keyUpHandler);
+                    if(config.googleMap){
+                        google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
+                        google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
+                    }
+                }else if(originMode!=Mode.fixed&&options.mode==Mode.fixed){
+                    if(config.googleMap){
+                        google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+                        google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+                    }
+                    document.removeEventListener("keydown",keyDownHandler);
+                    document.removeEventListener("keyup",keyUpHandler);
+                }
+            }else{
+                console.log("Error:options.mode is not a Legal Box Builder Mode!");
+            }
+        }else if(options.mode!=undefined&&options.mode!=null){
+            console.log("Error:options.mode is not a Legal Box Builder Mode!");
+        }
+        if(options.hollow!=undefined&&options.hollow!=null){
+            config.hollow=!!options.hollow;
         }
         if(typeof(options.id)=="string"){
             config.boxId=options.id;
@@ -63,6 +98,8 @@ var BoxBuilder=(function namespace(){
         }
         if(typeof(options.callback)=="function"){
             config.resultCallback=options.callback;
+        }else if(options.callback!=undefined&&options.callback!=null){
+            console.log("Error:options.callback is not a function!");
         }
     };
     Init.prototype.clearBoxes=function(){
