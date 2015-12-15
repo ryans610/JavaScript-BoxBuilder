@@ -9,7 +9,7 @@ var BoxBuilder=(function namespace(){
         config.map=map;
         if(!map){
             config.googleMap=false;
-            console.log("Warring:Google Map is not Active!");
+            console.warn("Google Map is not Active!");
         }
         if(typeof(options.mode)=="undefined"||options.mode==null){
             options.mode=0;
@@ -68,10 +68,10 @@ var BoxBuilder=(function namespace(){
                     document.removeEventListener("keyup",keyUpHandler);
                 }
             }else{
-                console.log("Error:options.mode is not a Legal Box Builder Mode!");
+                console.error("options.mode is not a Legal Box Builder Mode!");
             }
         }else if(options.mode!=undefined&&options.mode!=null){
-            console.log("Error:options.mode is not a Legal Box Builder Mode!");
+            console.error("options.mode is not a Legal Box Builder Mode!");
         }
         if(options.hollow!=undefined&&options.hollow!=null){
             config.hollow=!!options.hollow;
@@ -99,7 +99,7 @@ var BoxBuilder=(function namespace(){
         if(typeof(options.callback)=="function"){
             config.resultCallback=options.callback;
         }else if(options.callback!=undefined&&options.callback!=null){
-            console.log("Error:options.callback is not a function!");
+            console.error("options.callback is not a function!");
         }
     };
     Init.prototype.clearBoxes=function(){
@@ -112,7 +112,7 @@ var BoxBuilder=(function namespace(){
     };
     Init.prototype.setFixedBox=function(p1,p2){
         if(Number(p1.x)==NaN||Number(p1.y)==NaN||Number(p2.x)==NaN||Number(p2.y)==NaN){
-            console.log("Error:Parameter must be two Object(Number x,y)!");
+            console.error("Parameter must be two Object(Number x,y)!");
             return;
         }else{
             p1.x=Number(p1.x);
@@ -126,7 +126,7 @@ var BoxBuilder=(function namespace(){
             }
             config.box=addBox(p1,p2);
         }else{
-            console.log("Error:BoxBuilderMode is not fixed!");
+            console.error("BoxBuilderMode is not fixed!");
         }
     };
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
@@ -141,7 +141,7 @@ var BoxBuilder=(function namespace(){
                 });
             });
         }else{
-            console.log("Error:Google Map is not Active!");
+            console.error("Google Map is not Active!");
         }
     };
     //Event Handler
@@ -274,7 +274,15 @@ var BoxBuilder=(function namespace(){
         }
         return box;
     }
-    function updateBox(box,p1,p2){
+    function updateBox(box,pa,pb){
+        var p1={
+            x:Math.min(pa.x,pb.x),
+            y:Math.min(pa.y,pb.y)
+        };
+        var p2={
+            x:Math.max(pa.x,pb.x),
+            y:Math.max(pa.y,pb.y)
+        };
         if(config.hollow){
             box.top.style.left=p1.x+"px";
             box.top.style.top=p1.y+"px";
@@ -352,7 +360,7 @@ var BoxBuilder=(function namespace(){
     function getGoogleMapPixel(lat,lng,callback){
         if(config.googleMap){
             if(Number(lat)==NaN||Number(lng)==NaN){
-                console.log("Error:Parameter must be two Number and a Callback Function!");
+                console.error("Parameter must be two Number and a Callback Function!");
                 return;
             }
             var overlay=new google.maps.OverlayView();
@@ -367,7 +375,7 @@ var BoxBuilder=(function namespace(){
             };
             overlay.setMap(config.map);
         }else{
-            console.log("Error:Google Map is not Active!");
+            console.error("Google Map is not Active!");
         }
     }
     //Config
