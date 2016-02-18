@@ -14,9 +14,9 @@ var BoxBuilder=(function namespace(){
     }
     //Public Method
     Init.prototype.setGoogleMap=function(map){
-        if(!!map){
+        config.googleMap=!!map;
+        if(config.googleMap){
             config.map=map;
-            config.googleMap=true;
             config.draggable=config.map==undefined||config.map.get("draggable");
             if(config.mode==Mode.normal
                ||config.mode==Mode.keep
@@ -28,7 +28,6 @@ var BoxBuilder=(function namespace(){
                 google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
             }
         }else{
-            config.googleMap=false;
             if(config.log){
                 console.warn("Google Map is not Active!");
             }
