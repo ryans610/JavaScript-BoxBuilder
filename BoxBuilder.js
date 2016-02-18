@@ -39,7 +39,7 @@ var BoxBuilder=(function namespace(){
         }
         if(Number(options.mode)!=NaN&&options.mode!=null){
             var mode=Number(options.mode);
-            if(mode>=0&&mode<=3){
+            if(mode>=Mode.min&&mode<=Mode.max){
                 if(config.mode!=null&&config.mode!=undefined){
                     config.mode=mode;
                     var originMode=config.mode;
@@ -399,6 +399,10 @@ var BoxBuilder=(function namespace(){
         keep:1,
         multiple:2,
         fixed:3,
+        multi_fixed:4,
+        //Structure
+        min:0,
+        max:4,
     };
     var config={
         box:null,
