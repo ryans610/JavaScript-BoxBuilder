@@ -9,12 +9,14 @@ var BoxBuilder=(function namespace(){
         config.map=map;
         if(!map){
             config.googleMap=false;
-            console.warn("Google Map is not Active!");
         }
         if(typeof(options.mode)=="undefined"||options.mode==null){
             options.mode=0;
         }
         this.setOptions(options);
+        if(config.log&&!map){
+            console.warn("Google Map is not Active!");
+        }
     }
     //Public Method
     Init.prototype.setGoogleMap=function(map){
@@ -33,6 +35,9 @@ var BoxBuilder=(function namespace(){
         }
     };
     Init.prototype.setOptions=function(options){
+        if(options.log!=undefined&&options.log!=null){
+            config.log=!!options.log;
+        }
         if(Number(options.mode)!=NaN&&options.mode!=null){
             var mode=Number(options.mode);
             if(mode>=0&&mode<=3){
@@ -354,7 +359,9 @@ var BoxBuilder=(function namespace(){
         }else{
             result.min.lat=result.min.lng=result.max.lat=result.max.lng=null;
         }
-        console.log("Min:"+result.min.lat+","+result.min.lng+"\nMax:"+result.max.lat+","+result.max.lng);
+        if(config.log){
+            console.log("Min:"+result.min.lat+","+result.min.lng+"\nMax:"+result.max.lat+","+result.max.lng);
+        }
         config.resultCallback&&config.resultCallback.call(this,result);
         return result;
     }
@@ -407,6 +414,7 @@ var BoxBuilder=(function namespace(){
         dragging:false,
         fixedPoints:null,
         hollow:true,
+        log:true,
     };
     var temp={
         start:{
