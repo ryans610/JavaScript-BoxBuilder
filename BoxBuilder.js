@@ -15,21 +15,6 @@ var BoxBuilder=(function namespace(){
             options.mode=0;
         }
         this.setOptions(options);
-
-        /*if(config.mode==Mode.normal
-           ||config.mode==Mode.keep
-           ||config.mode==Mode.multiple){
-            document.addEventListener("keydown",keyDownHandler);
-            document.addEventListener("keyup",keyUpHandler);
-            if(config.googleMap){
-                google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
-                google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
-            }
-        }
-        if(config.googleMap&&config.mode==Mode.fixed){
-            google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
-            google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
-        }*/
     }
     //Public Method
     Init.prototype.setGoogleMap=function(map){
@@ -51,22 +36,41 @@ var BoxBuilder=(function namespace(){
         if(Number(options.mode)!=NaN&&options.mode!=null){
             var mode=Number(options.mode);
             if(mode>=0&&mode<=3){
-                var originMode=config.mode;
-                config.mode=mode;
-                if(originMode==Mode.fixed&&mode!=Mode.fixed){
-                    document.addEventListener("keydown",keyDownHandler);
-                    document.addEventListener("keyup",keyUpHandler);
-                    if(config.googleMap){
-                        google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
-                        google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
+                if(config.mode!=null&&config.mode!=undefined){
+                    config.mode=mode;
+                    var originMode=config.mode;
+                    if(originMode==Mode.fixed&&mode!=Mode.fixed){
+                        document.addEventListener("keydown",keyDownHandler);
+                        document.addEventListener("keyup",keyUpHandler);
+                        if(config.googleMap){
+                            google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
+                            google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
+                        }
+                    }else if(originMode!=Mode.fixed&&mode==Mode.fixed){
+                        if(config.googleMap){
+                            google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+                            google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+                        }
+                        document.removeEventListener("keydown",keyDownHandler);
+                        document.removeEventListener("keyup",keyUpHandler);
                     }
-                }else if(originMode!=Mode.fixed&&mode==Mode.fixed){
-                    if(config.googleMap){
-                        google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
-                        google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+                }else{  //Init
+                    config.mode=mode;
+                    if(config.mode==Mode.normal
+                     ||config.mode==Mode.keep
+                     ||config.mode==Mode.multiple){
+                        document.addEventListener("keydown",keyDownHandler);
+                        document.addEventListener("keyup",keyUpHandler);
+                        if(config.googleMap){
+                            google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
+                            google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
+                        }
+                    }else if(config.mode==Mode.fixed){
+                        if(config.googleMap){
+                            google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+                            google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+                        }
                     }
-                    document.removeEventListener("keydown",keyDownHandler);
-                    document.removeEventListener("keyup",keyUpHandler);
                 }
             }else{
                 console.error("options.mode is not a Legal Box Builder Mode!");
@@ -213,7 +217,7 @@ var BoxBuilder=(function namespace(){
         config.dragging=false;
         if(config.mode!=Mode.keep&&config.mode!=Mode.multiple){
             config.boxInit=false;
-            deleteBox(config.box);
+            deleteBox(config.box,config.boxId);
         }
         endResult(temp.start,temp.end);
     }
@@ -394,7 +398,7 @@ var BoxBuilder=(function namespace(){
         box:null,
         boxId:"box",
         boxClass:"box",
-        mode:Mode.normal,
+        mode:null,
         googleMap:true,
         keyDownSenser:false,
         map:null,
