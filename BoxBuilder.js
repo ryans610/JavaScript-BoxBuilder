@@ -114,11 +114,13 @@ var BoxBuilder=(function namespace(){
         }
     };
     Init.prototype.clearBoxes=function(){
-        if(config.mode=Mode.multiple&&boxes.length>0){
+        if(config.mode==Mode.multiple&&boxes.length>0){
             for(var i in boxes){
                 deleteBox(boxes[i],""+config.boxId+i);
             }
             boxes.length=0;
+        }else if(config.mode==Mode.keep){
+            deleteBox(config.box,config.boxId);
         }
     };
     Init.prototype.setFixedBox=function(p1,p2){
@@ -181,7 +183,7 @@ var BoxBuilder=(function namespace(){
             if(config.mode==Mode.normal){
                 deleteBox(config.box,config.boxId);
             }
-            if(!!document.getElementById(config.boxId)&&config.mode==Mode.multiple){
+            if(config.mode==Mode.multiple&&!!document.getElementById(config.boxId)){
                 setId(config.box,""+config.boxId+boxes.length);
                 boxes.push(config.box);
                 config.box=null;
