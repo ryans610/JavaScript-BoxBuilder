@@ -49,17 +49,18 @@ var BoxBuilder=(function namespace(){
     };
     Init.prototype.setOptions=function(options){
         if(Number(options.mode)!=NaN&&options.mode!=null){
-            if(options.mode>=0&&options.mode<=3){
+            var mode=Number(options.mode);
+            if(mode>=0&&mode<=3){
                 var originMode=config.mode;
-                config.mode=options.mode;
-                if(originMode==Mode.fixed&&options.mode!=Mode.fixed){
+                config.mode=mode;
+                if(originMode==Mode.fixed&&mode!=Mode.fixed){
                     document.addEventListener("keydown",keyDownHandler);
                     document.addEventListener("keyup",keyUpHandler);
                     if(config.googleMap){
                         google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
                         google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
                     }
-                }else if(originMode!=Mode.fixed&&options.mode==Mode.fixed){
+                }else if(originMode!=Mode.fixed&&mode==Mode.fixed){
                     if(config.googleMap){
                         google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                         google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
@@ -70,8 +71,6 @@ var BoxBuilder=(function namespace(){
             }else{
                 console.error("options.mode is not a Legal Box Builder Mode!");
             }
-        }else if(options.mode!=undefined&&options.mode!=null){
-            console.error("options.mode is not a Legal Box Builder Mode!");
         }
         if(options.hollow!=undefined&&options.hollow!=null){
             config.hollow=!!options.hollow;
@@ -85,6 +84,8 @@ var BoxBuilder=(function namespace(){
                     setId(boxes[i],""+config.boxId+i);
                 }
             }
+        }else if(options.id!=undefined&&options.id!=null){
+            console.error("options.id is not a Legal ID Name!");
         }
         if(typeof(options.className)=="string"){
             config.boxClass=options.className;
@@ -95,6 +96,8 @@ var BoxBuilder=(function namespace(){
                     setClassName(boxes[i],config.boxClass);
                 }
             }
+        }else if(options.className!=undefined&&options.className!=null){
+            console.error("options.id is not a Legal Class Name!");
         }
         if(typeof(options.callback)=="function"){
             config.resultCallback=options.callback;
@@ -208,8 +211,10 @@ var BoxBuilder=(function namespace(){
     }
     function mouseUpHandler(e){
         config.dragging=false;
-        config.boxInit=false;
-        deleteBox(config.box);
+        if(config.mode!=Mode.keep&&config.mode!=Mode.multiple){
+            config.boxInit=false;
+            deleteBox(config.box);
+        }
         endResult(temp.start,temp.end);
     }
     function mapMouseDownHandler(event){
