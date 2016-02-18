@@ -6,23 +6,18 @@ var BoxBuilder=(function namespace(){
             container=document.getElementsByTagName("body")[0];
         }
         config.container=container;
-        config.map=map;
-        if(!map){
-            config.googleMap=false;
-        }
+        this.setGoogleMap(map);
         if(typeof(options.mode)=="undefined"||options.mode==null){
             options.mode=0;
         }
         this.setOptions(options);
-        if(config.log&&!map){
-            console.warn("Google Map is not Active!");
-        }
     }
     //Public Method
     Init.prototype.setGoogleMap=function(map){
         if(!!map){
             config.map=map;
             config.googleMap=true;
+            config.draggable=config.map==undefined||config.map.get("draggable");
             if(config.mode==Mode.normal
                ||config.mode==Mode.keep
                ||config.mode==Mode.multiple){
@@ -31,6 +26,11 @@ var BoxBuilder=(function namespace(){
             }else if(config.mode==Mode.fixed){
                 google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                 google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+            }
+        }else{
+            config.googleMap=false;
+            if(config.log){
+                console.warn("Google Map is not Active!");
             }
         }
     };
@@ -412,6 +412,7 @@ var BoxBuilder=(function namespace(){
         container:null,
         resultCallback:undefined,
         dragging:false,
+        draggable:true,
         fixedPoints:null,
         hollow:true,
         log:true,
