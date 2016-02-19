@@ -144,8 +144,8 @@ var BoxBuilder=(function namespace(){
     };
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
         config.fixedPoints={
-            p1:p1,
-            p2:p2
+            p1:Object.create(p1),
+            p2:Object,create(p2)
         };
         if(config.googleMap){
             getGoogleMapPixel(p1.lat,p1.lng,function(point1){
@@ -161,7 +161,7 @@ var BoxBuilder=(function namespace(){
     function keyDownHandler(e){
         if(e.which==17){
             if(!config.keyDownSenser){
-                if(config.googleMap){
+                if(config.googleMap&&config.draggable){
                     config.map.setOptions({draggable: false});
                 }
                 config.keyDownSenser=true;
@@ -173,7 +173,7 @@ var BoxBuilder=(function namespace(){
     }
     function keyUpHandler(e){
         if(e.which==17){
-            if(config.googleMap){
+            if(config.googleMap&&config.draggable){
                 config.map.setOptions({draggable: true});
             }
             config.keyDownSenser=false;
@@ -187,6 +187,13 @@ var BoxBuilder=(function namespace(){
                 setId(config.box,""+config.boxId+boxes.length);
                 boxes.push(config.box);
                 config.box=null;
+            }
+            if(config.mode==Mode.keep){
+                /*if(config.googleMap){
+                    google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+                    google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+                }*/
+
             }
         }
     }
