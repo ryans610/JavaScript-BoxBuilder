@@ -17,13 +17,14 @@ var BoxBuilder=(function namespace(){
         config.googleMap=!!map;
         if(config.googleMap){
             config.map=map;
-            config.draggable=config.map==undefined||config.map.get("draggable");
+            config.draggable=config.map.get("draggable")==undefined||config.map.get("draggable");
             if(config.mode==Mode.normal
                ||config.mode==Mode.keep
                ||config.mode==Mode.multiple){
                 google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
                 google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
-            }else if(config.mode==Mode.fixed){
+            }
+            if(config.mode==Mode.fixed){
                 google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                 google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
             }
@@ -50,7 +51,8 @@ var BoxBuilder=(function namespace(){
                             google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
                             google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
                         }
-                    }else if(originMode!=Mode.fixed&&mode==Mode.fixed){
+                    }
+                    if(originMode!=Mode.fixed&&originMode!=Mode.keep&&(mode==Mode.fixed||mode==Mode.keep)){
                         if(config.googleMap){
                             google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                             google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
@@ -69,7 +71,8 @@ var BoxBuilder=(function namespace(){
                             google.maps.event.addListener(config.map,"mousedown",mapMouseDownHandler);
                             google.maps.event.addListener(config.map,"mousemove",mapMouseMoveHandler);
                         }
-                    }else if(config.mode==Mode.fixed){
+                    }
+                    if(config.mode==Mode.fixed||config.mode==Mode.keep){
                         if(config.googleMap){
                             google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                             google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
@@ -119,7 +122,7 @@ var BoxBuilder=(function namespace(){
                 deleteBox(boxes[i],""+config.boxId+i);
             }
             boxes.length=0;
-        }else if(config.mode==Mode.keep){
+        }else if(config.mode==Mode.fixed||config.mode==Mode.keep){
             deleteBox(config.box,config.boxId);
         }
     };
@@ -133,7 +136,7 @@ var BoxBuilder=(function namespace(){
             p2.x=Number(p2.x);
             p2.y=Number(p2.y);
         }
-        if(config.mode==Mode.fixed){
+        if(config.mode==Mode.fixed||config.mode==Mode.keep){
             if(!!config.box){
                 deleteBox(config.box,config.boxId);
             }
@@ -145,7 +148,7 @@ var BoxBuilder=(function namespace(){
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
         config.fixedPoints={
             p1:Object.create(p1),
-            p2:Object,create(p2)
+            p2:Object.create(p2)
         };
         if(config.googleMap){
             getGoogleMapPixel(p1.lat,p1.lng,function(point1){
@@ -188,13 +191,6 @@ var BoxBuilder=(function namespace(){
                 boxes.push(config.box);
                 config.box=null;
             }
-            if(config.mode==Mode.keep){
-                /*if(config.googleMap){
-                    google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
-                    google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
-                }*/
-
-            }
         }
     }
     function mouseDownHandler(e){
@@ -209,6 +205,10 @@ var BoxBuilder=(function namespace(){
             updateBox(config.box,pos,pos);
         }
         config.dragging=true;
+        if(config.mode==Mode.keep){
+            google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
+            google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
+        }
     }
     function mouseMoveHandler(e){
         var offset=getOffset(config.container);
@@ -232,7 +232,16 @@ var BoxBuilder=(function namespace(){
             config.boxInit=false;
             deleteBox(config.box,config.boxId);
         }
-        endResult(temp.start,temp.end);
+        var result=endResult(temp.start,temp.end);
+        if(config.mode==Mode.keep){
+            if(config.googleMap){
+                //Init.prototype.setFixedBoxLatLng(temp.start,temp.end);
+                config.fixedPoints={
+                    p1:Object.create(result.min),
+                    p2:Object.create(result.max)
+                }
+            }
+        }
     }
     function mapMouseDownHandler(event){
         temp.start.lat=event.latLng.lat();
@@ -243,7 +252,7 @@ var BoxBuilder=(function namespace(){
         temp.end.lng=event.latLng.lng();
     }
     function fixedBoxUpdateHandler(){
-        if(config.googleMap&&config.mode==Mode.fixed){
+        if(config.googleMap&&(config.mode==Mode.fixed||config.mode==Mode.keep)){
             getGoogleMapPixel(config.fixedPoints.p1.lat,config.fixedPoints.p1.lng,function(point1){
                 getGoogleMapPixel(config.fixedPoints.p2.lat,config.fixedPoints.p2.lng,function(point2){
                     updateBox(config.box,point1,point2);
@@ -445,5 +454,9 @@ var BoxBuilder=(function namespace(){
     };
     var boxes=[];
     BoxBuilderMode=Mode;
+    //Debug
+    Init.prototype.getConfig=function(){
+        return config;
+    };
     return Init;
 }());
