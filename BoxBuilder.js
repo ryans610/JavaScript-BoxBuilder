@@ -11,6 +11,9 @@ var BoxBuilder=(function namespace(){
             options.mode=0;
         }
         this.setOptions(options);
+        if(!config.googleMap&&config.log){
+            console.warn("Google Map is not Active!");
+        }
     }
     //Public Method
     Init.prototype.setGoogleMap=function(map){
@@ -27,10 +30,6 @@ var BoxBuilder=(function namespace(){
             if(config.mode==Mode.fixed){
                 google.maps.event.addListener(config.map,"zoom_changed",fixedBoxUpdateHandler);
                 google.maps.event.addListener(config.map,"center_changed",fixedBoxUpdateHandler);
-            }
-        }else{
-            if(config.log){
-                console.warn("Google Map is not Active!");
             }
         }
     };
@@ -440,7 +439,7 @@ var BoxBuilder=(function namespace(){
         draggable:true,
         fixedPoints:null,
         hollow:true,
-        log:true,
+        log:false,
     };
     var temp={
         start:{
