@@ -147,8 +147,8 @@ var BoxBuilder=(function namespace(){
     };
     Init.prototype.setFixedBoxLatLng=function(p1,p2){
         config.fixedPoints={
-            p1:Object.create(p1),
-            p2:Object.create(p2)
+            p1:objectClone(p1),
+            p2:objectClone(p2)
         };
         if(config.googleMap){
             getGoogleMapPixel(p1.lat,p1.lng,function(point1){
@@ -237,8 +237,8 @@ var BoxBuilder=(function namespace(){
             if(config.googleMap){
                 //Init.prototype.setFixedBoxLatLng(temp.start,temp.end);
                 config.fixedPoints={
-                    p1:Object.create(result.min),
-                    p2:Object.create(result.max)
+                    p1:objectClone(result.min),
+                    p2:objectClone(result.max)
                 }
             }
         }
@@ -410,6 +410,10 @@ var BoxBuilder=(function namespace(){
         }else{
             console.error("Google Map is not Active!");
         }
+    }
+    function objectClone(obj){
+        var json=JSON.stringify(obj);
+        return JSON.parse(json);
     }
     //Config
     var Mode={
