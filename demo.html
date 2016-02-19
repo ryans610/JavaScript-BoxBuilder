@@ -77,20 +77,31 @@
     			document.getElementById('map-canvas'),	//Container
                 map,									//Google Map
                 {										//Options
-                	mode:BoxBuilderMode.fixed,
+                	mode:BoxBuilderMode.keep,
                 	id:"box",
                 	className:"box",
+                    callback:function(result){
+                        alert("Min:"+result.min.lat+","+result.min.lng+"\nMax:"+result.max.lat+","+result.max.lng);
+                    },
+                    log:true,
                 }
     		);
-    		boxBuilder.setFixedBoxLatLng({
+            /*boxBuilder.setFixedBox({
+                x:50,
+                y:50
+            },{
+                x:100,
+                y:100
+            });*/
+    		/*boxBuilder.setFixedBoxLatLng({
     			lat: 25.016436,
                 lng: 121.532723
     		},{
     			lat: 25.018795,
                 lng: 121.529574
-    		});
+    		});*/
 
-    		googleMarkerBuilder=new GoogleMarkerBuilder(map,function (info){
+    		/*googleMarkerBuilder=new GoogleMarkerBuilder(map,function (info){
 				var tmp="<table class='marker-info'>";
 				tmp+="<tr><td>DCIS</td><td>"+info.DCIS+"</td></tr>";
 				tmp+="<tr><td>施工地點(CPS)</td><td>"+info.CPSLocation+"</td></tr>";
@@ -100,7 +111,7 @@
 				tmp+="</table>";
 				return tmp;
     		});
-    		googleMarkerBuilder.setMarkers(markers);
+    		googleMarkerBuilder.setMarkers(markers);*/
         });
     </script>
 </head>
