@@ -121,8 +121,13 @@ var BoxBuilder=(function namespace(){
                 deleteBox(boxes[i],""+config.boxId+i);
             }
             boxes.length=0;
-        }else if(config.mode==Mode.fixed||config.mode==Mode.keep){
+        }
+        if(config.mode==Mode.fixed){
             deleteBox(config.box,config.boxId);
+        }
+        if(config.mode==Mode.keep){
+            deleteBox(config.box,config.boxId);
+            config.keep=false;
         }
     };
     Init.prototype.setFixedBox=function(p1,p2){
@@ -234,7 +239,7 @@ var BoxBuilder=(function namespace(){
         var result=endResult(temp.start,temp.end);
         if(config.mode==Mode.keep){
             if(config.googleMap){
-                //Init.prototype.setFixedBoxLatLng(temp.start,temp.end);
+                config.keep=true;
                 config.fixedPoints={
                     p1:objectClone(result.min),
                     p2:objectClone(result.max)
@@ -251,7 +256,7 @@ var BoxBuilder=(function namespace(){
         temp.end.lng=event.latLng.lng();
     }
     function fixedBoxUpdateHandler(){
-        if(config.googleMap&&(config.mode==Mode.fixed||config.mode==Mode.keep)){
+        if(config.googleMap&&(config.mode==Mode.fixed||(config.mode==Mode.keep&&config.keep))){
             getGoogleMapPixel(config.fixedPoints.p1.lat,config.fixedPoints.p1.lng,function(point1){
                 getGoogleMapPixel(config.fixedPoints.p2.lat,config.fixedPoints.p2.lng,function(point2){
                     updateBox(config.box,point1,point2);
@@ -440,6 +445,7 @@ var BoxBuilder=(function namespace(){
         fixedPoints:null,
         hollow:true,
         log:false,
+        keep:false,
     };
     var temp={
         start:{
