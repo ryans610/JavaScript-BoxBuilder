@@ -416,8 +416,7 @@ var BoxBuilder=(function namespace(){
         }
     }
     function objectClone(obj){
-        var json=JSON.stringify(obj);
-        return JSON.parse(json);
+        return JSON.parse(JSON.stringify(obj));
     }
     //Config
     var Mode={
