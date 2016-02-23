@@ -1,12 +1,15 @@
 var BoxBuilderMode;
 var BoxBuilder=(function namespace(){
     //Constructor
-    function Init(container,map=null,options={}){
+    function Init(container,map,options){
         if(typeof(container)=="undefined"||container==null){
             container=document.getElementsByTagName("body")[0];
         }
         config.container=container;
         this.setGoogleMap(map);
+        if(!options){
+            options={};
+        }
         if(typeof(options.mode)=="undefined"||options.mode==null){
             options.mode=0;
         }
