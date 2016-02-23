@@ -1,7 +1,7 @@
 var BoxBuilderMode;
 var BoxBuilder=(function namespace(){
     //Constructor
-    function Init(container,map,options){
+    function Init(container,map=null,options={}){
         if(typeof(container)=="undefined"||container==null){
             container=document.getElementsByTagName("body")[0];
         }
