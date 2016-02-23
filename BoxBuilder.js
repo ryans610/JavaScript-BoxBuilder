@@ -243,7 +243,12 @@ var BoxBuilder=(function namespace(){
                 config.fixedPoints={
                     p1:objectClone(result.min),
                     p2:objectClone(result.max)
-                }
+                };
+            }
+        }
+        if(config.mode==Mode.multiple){
+            if(config.googleMap){
+                config.keep=true;
             }
         }
     }
