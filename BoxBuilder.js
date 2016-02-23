@@ -91,7 +91,7 @@ var BoxBuilder=(function namespace(){
                 setId(config.box,config.boxId);
             }else if(boxes.length>0){
                 for(var i in boxes){
-                    setId(boxes[i],""+config.boxId+i);
+                    setId(boxes[i].box,""+config.boxId+i);
                 }
             }
         }else if(options.id!=undefined&&options.id!=null){
@@ -103,7 +103,7 @@ var BoxBuilder=(function namespace(){
                 setClassName(config.box,config.boxClass);
             }else if(boxes.length>0){
                 for(var i in boxes){
-                    setClassName(boxes[i],config.boxClass);
+                    setClassName(boxes[i].box,config.boxClass);
                 }
             }
         }else if(options.className!=undefined&&options.className!=null){
@@ -118,7 +118,7 @@ var BoxBuilder=(function namespace(){
     Init.prototype.clearBoxes=function(){
         if(config.mode==Mode.multiple&&boxes.length>0){
             for(var i in boxes){
-                deleteBox(boxes[i],""+config.boxId+i);
+                deleteBox(boxes[i].box,""+config.boxId+i);
             }
             boxes.length=0;
         }
@@ -192,7 +192,7 @@ var BoxBuilder=(function namespace(){
             }
             if(config.mode==Mode.multiple&&!!document.getElementById(config.boxId)){
                 setId(config.box,""+config.boxId+boxes.length);
-                boxes.push(config.box);
+                boxes.push({box:config.box});
                 config.box=null;
             }
         }
