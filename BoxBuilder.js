@@ -270,6 +270,14 @@ var BoxBuilder=(function namespace(){
                     updateBox(config.box,point1,point2);
                 });
             });
+        }else if(config.googleMap&&(config.mode==Mode.multiple||config.mode==Mode.multi_fixed)){
+            for(var i in boxes){
+                getGoogleMapPixel(boxes[i].p1.lat,boxes[i].p2.lng,function(point1){
+                    getGoogleMapPixel(boxes[i].p2.lat,boxes[i].p2.lng,function(point2){
+                        updateBox(boxes[i].box,point1,point2);
+                    });
+                });
+            }
         }
     }
     //Private Method
